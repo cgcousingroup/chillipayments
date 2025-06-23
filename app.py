@@ -69,26 +69,30 @@ async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    product = query.data.replace('product_', '')
+    product = query.data.replace('product_', '').strip()
     currency = user_currency.get(query.from_user.id)
 
-    if currency and product:
-        payment_link = PAYMENT_LINKS.get(currency, {}).get(product)
-        product_name = PRODUCT_NAMES.get(product, product)
+    if not currency:
+        await query.edit_message_text("❌ Currency selection not found. Please type /start again.")
+        return
 
-        if payment_link:
-            message = (
-                f"✅ You selected *{product_name}* with *{currency.upper()}*.\n\n"
-                f"👉 Please pay using the link below:\n\n"
-                f"{payment_link}\n\n"
-                f"Or Pay using Paypal: ```laurajordana90@gmail.com```\n\n"
-                f"📩 After payment, send your receipt to: {SUPPORT_USERNAME}"
-            )
-            await query.edit_message_text(message, parse_mode="Markdown")
-        else:
-            await query.edit_message_text("❌ Payment link not found. Please try again.")
-    else:
-        await query.edit_message_text("❌ Session expired. Please type /start again.")
+    if product not in PAYMENT_LINKS.get(currency, {}):
+        await query.edit_message_text("❌ Invalid product selected or payment link not found. Please type /start again.")
+        return
+
+    payment_link = PAYMENT_LINKS[currency][product]
+    product_name = PRODUCT_NAMES.get(product, product)
+
+    message = (
+        f"✅ You selected *{product_name}* with *{currency.upper()}*.\n\n"
+        f"👉 Please pay using the link below:\n\n"
+        f"{payment_link}\n\n"
+        f"Or Pay using Paypal: ```laurajordana90@gmail.com```\n\n"
+        f"📩 After payment, send your receipt to: {SUPPORT_USERNAME}"
+    )
+
+    await query.edit_message_text(message, parse_mode="Markdown")
+
 
 def main():
     app = Application.builder().token(TOKEN).build()
