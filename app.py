@@ -23,13 +23,6 @@ PAYMENT_LINKS = {
     }
 }
 
-# Nomes dos produtos
-PRODUCT_NAMES = {
-    'product1': '🔥 Prohibition',
-    'product2': '🔥 Amateur',
-    'product3': '🔥 Girl HighSchool',
-}
-
 # Dicionário pra guardar a escolha de moeda por usuário
 user_currency = {}
 
@@ -53,46 +46,36 @@ async def currency_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
         [
-            InlineKeyboardButton(PRODUCT_NAMES['product1'], callback_data='product_product1'),
-            InlineKeyboardButton(PRODUCT_NAMES['product2'], callback_data='product_product2'),
-            InlineKeyboardButton(PRODUCT_NAMES['product3'], callback_data='product_product3'),
+            InlineKeyboardButton("🔥 Prohibition", callback_data='product_product1'),
+            InlineKeyboardButton("🔥 Amateur", callback_data='product_product2'),
+            InlineKeyboardButton("🔥 Girl HighSchool", callback_data='product_product3'),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        f"You selected *{currency.upper()}*.\n\nNow choose your product:",
-        parse_mode="Markdown",
-        reply_markup=reply_markup
-    )
+    await query.edit_message_text(f"You selected *{currency.upper()}*.\n\nNow choose your product:", parse_mode="Markdown", reply_markup=reply_markup)
 
 async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    product = query.data.replace('product_', '').strip()
+    product = query.data.replace('product_', '')
     currency = user_currency.get(query.from_user.id)
 
-    if not currency:
-        await query.edit_message_text("❌ Currency selection not found. Please type /start again.")
-        return
-
-    if product not in PAYMENT_LINKS.get(currency, {}):
-        await query.edit_message_text("❌ Invalid product selected or payment link not found. Please type /start again.")
-        return
-
-    payment_link = PAYMENT_LINKS[currency][product]
-    product_name = PRODUCT_NAMES.get(product, product)
-
-    message = (
-        f"✅ You selected *{product_name}* with *{currency.upper()}*.\n\n"
-        f"👉 Please pay using the link below:\n\n"
-        f"{payment_link}\n\n"
-        f"Or Pay using Paypal: ```laurajordana90@gmail.com```\n\n"
-        f"📩 After payment, send your receipt to: {SUPPORT_USERNAME}"
-    )
-
-    await query.edit_message_text(message, parse_mode="Markdown")
-
+    if currency and product:
+        payment_link = PAYMENT_LINKS.get(currency, {}).get(product)
+        if payment_link:
+            message = (
+                f"✅ You selected *{product.upper()}* with *{currency.upper()}*.\n\n"
+                f"👉 Please pay using the link below:\n\n"
+                f"{payment_link}\n\n"
+                f"Or Pay using Paypal: ```laurajordana90@gmail.com```\n\n"
+                f"📩 After payment, send your receipt to: {SUPPORT_USERNAME}"
+            )
+            await query.edit_message_text(message, parse_mode="Markdown")
+        else:
+            await query.edit_message_text("❌ Payment link not found. Please try again.")
+    else:
+        await query.edit_message_text("❌ Session expired. Please type /start again.")
 
 def main():
     app = Application.builder().token(TOKEN).build()
