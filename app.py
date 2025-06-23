@@ -7,9 +7,9 @@ SUPPORT_USERNAME = '@supvipoficial'
 # Links de pagamento por produto e por moeda
 PAYMENT_LINKS = {
     'dollar': {
-        'prohibition': 'https://buy.stripe.com/28obLG6AXgnV75K3cc',
-        'amateur': 'https://buy.stripe.com/6oE5ni1gD4Fdcq48wA',
-        'girls': 'https://buy.stripe.com/fZe4je3oL3B92PueVa',
+        'product1': 'https://buy.stripe.com/28obLG6AXgnV75K3cc',
+        'product2': 'https://buy.stripe.com/6oE5ni1gD4Fdcq48wA',
+        'product3': 'https://buy.stripe.com/fZe4je3oL3B92PueVa',
     },
     'euro': {
         'product1': 'https://buy.stripe.com/4gw2b6e3pb3BfCg3cd',
@@ -21,6 +21,13 @@ PAYMENT_LINKS = {
         'product2': 'https://buy.stripe.com/cN23fa9N94Fd89O6oB',
         'product3': 'https://buy.stripe.com/bIY3fae3p5Jheyc00J',
     }
+}
+
+# Nomes dos produtos
+PRODUCT_NAMES = {
+    'product1': '🔥 Prohibition',
+    'product2': '🔥 Amateur',
+    'product3': '🔥 Girl HighSchool',
 }
 
 # Dicionário pra guardar a escolha de moeda por usuário
@@ -46,13 +53,17 @@ async def currency_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
         [
-            InlineKeyboardButton("🔥 Prohibition", callback_data='product_product1'),
-            InlineKeyboardButton("🔥 Amateur", callback_data='product_product2'),
-            InlineKeyboardButton("🔥 Girl HighSchool", callback_data='product_product3'),
+            InlineKeyboardButton(PRODUCT_NAMES['product1'], callback_data='product_product1'),
+            InlineKeyboardButton(PRODUCT_NAMES['product2'], callback_data='product_product2'),
+            InlineKeyboardButton(PRODUCT_NAMES['product3'], callback_data='product_product3'),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(f"You selected *{currency.upper()}*.\n\nNow choose your product:", parse_mode="Markdown", reply_markup=reply_markup)
+    await query.edit_message_text(
+        f"You selected *{currency.upper()}*.\n\nNow choose your product:",
+        parse_mode="Markdown",
+        reply_markup=reply_markup
+    )
 
 async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -63,9 +74,11 @@ async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if currency and product:
         payment_link = PAYMENT_LINKS.get(currency, {}).get(product)
+        product_name = PRODUCT_NAMES.get(product, product)
+
         if payment_link:
             message = (
-                f"✅ You selected *{product.upper()}* with *{currency.upper()}*.\n\n"
+                f"✅ You selected *{product_name}* with *{currency.upper()}*.\n\n"
                 f"👉 Please pay using the link below:\n\n"
                 f"{payment_link}\n\n"
                 f"Or Pay using Paypal: ```laurajordana90@gmail.com```\n\n"
